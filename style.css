@@ -63,3 +63,6 @@ select{font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(-
 footer{margin-top:28px;font-size:.75rem;color:var(--muted);text-align:center}
 .tracks li:first-child{grid-column:1/-1}
 @media (max-width:380px){.tracks{grid-template-columns:1fr}}
+
+.jumpq{display:none;align-items:center;gap:8px;justify-content:center;margin-top:10px;font-size:.9rem;color:var(--muted)}
+.jumpq.show{display:flex}

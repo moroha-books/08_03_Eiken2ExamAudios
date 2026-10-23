@@ -67,6 +67,43 @@
     });
   }
 
+
+  // ---- 問題ごとの頭出し(本の「▶ 音声」リンク …html#q5 から No.5 の位置で再生) ----
+  var CUES = (window.EIKEN_CUES || {})[audio.getAttribute('data-id')] || null;
+  var jumpSel = document.getElementById('jumpq');
+  var pendingCue = null;
+  function cueTime(no) { return CUES && CUES[String(no)] != null ? Math.max(0, CUES[String(no)] - 0.3) : null; }
+  function goCue(no, autoplay) {
+    var t = cueTime(no);
+    if (t === null) return false;
+    resume.classList.remove('show');
+    if (audio.readyState >= 1) audio.currentTime = t; else pendingCue = t;
+    seek.value = t; cur.textContent = fmt(t);
+    if (jumpSel) jumpSel.value = String(no);
+    if (autoplay) {
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { state.textContent = '▶ を押すと No. ' + no + ' から再生します'; });
+    } else if (audio.paused) {
+      state.textContent = '▶ を押すと No. ' + no + ' から再生します';
+    }
+    return true;
+  }
+  audio.addEventListener('loadedmetadata', function () {
+    if (pendingCue !== null) { audio.currentTime = pendingCue; pendingCue = null; }
+  });
+  if (CUES && jumpSel) {
+    Object.keys(CUES).sort(function (a, b) { return a - b; }).forEach(function (no) {
+      var o = document.createElement('option'); o.value = no; o.textContent = 'No. ' + no; jumpSel.appendChild(o);
+    });
+    jumpSel.parentNode.classList.add('show');
+    jumpSel.addEventListener('change', function () { if (jumpSel.value) goCue(jumpSel.value, true); });
+  }
+  function fromHash() {
+    var m = /^#q(\d+)$/.exec(location.hash || '');
+    return m ? goCue(m[1], false) : false;
+  }
+  window.addEventListener('hashchange', fromHash);
+
   if ('mediaSession' in navigator) {
     try {
       navigator.mediaSession.metadata = new MediaMetadata({ title: document.title, artist: '英検2級 本番形式 模擬試験 5回分' });
@@ -75,4 +112,5 @@
     } catch (e) {}
   }
   render();
+  fromHash();
 })();
